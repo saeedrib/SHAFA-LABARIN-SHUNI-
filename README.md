@@ -25,7 +25,11 @@ The repository root contains `index.html`; import this repository into Vercel as
 - Admin story management: create, edit, publish/draft, delete.
 - Admin episode management: create, edit, publish/draft, delete, audio URL, lock flag and scheduled unlock time.
 - Locked episode content is filtered by database RLS unless the episode is unlocked by its scheduled time, an unlock record exists for the signed-in user, or the user is an admin.
-- Cover and audio file uploads, rewarded-ad verification, payment processing, AI story assistant, and generated narration are not yet implemented. Audio can currently be linked by URL.
+- Direct cover image upload to the public `shafa-covers` Storage bucket (JPG/PNG/WebP, max 5MB).
+- Direct audio upload to the public `shafa-audio` Storage bucket (MP3/MP4/OGG/WAV/WebM, max 25MB); external audio URLs are also supported.
+- A published sample story, “Ranar Kasuwa”, with its first free episode is seeded in the database.
+- Locked episode titles and scheduled unlock notices are shown through a metadata-only RPC; protected episode text remains behind table RLS.
+- Rewarded-ad verification, payment processing, AI story assistant, and generated Mustapha/female narration are not yet implemented.
 - Deployment and real-device end-to-end testing must be confirmed in Vercel/browser before describing the site as fully live.
 
 ## Important security note
