@@ -16,7 +16,7 @@
   try{
     await loadSdk();
     const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
-    const {data:stories,error}=await db.from('stories').select('id,title,slug,summary,category,cover_url').eq('status','published').order('created_at',{ascending:false});
+    const {data:stories,error}=await db.from('shafa_stories').select('id,title,slug,summary,category,cover_url').eq('status','published').order('created_at',{ascending:false});
     if(error)throw error;
     if(!stories?.length){grid.innerHTML='<p class="empty" style="display:block">Babu labari da aka wallafa tukuna.</p>';return;}
     grid.innerHTML='';
@@ -34,7 +34,7 @@
     }
     async function openStory(story){
       title.textContent=story.title;body.textContent='Ana ɗauko labari…';reader.classList.add('open');reader.scrollIntoView({behavior:'smooth',block:'start'});
-      const {data:episodes,error}=await db.from('episodes').select('id,title,body,episode_number,audio_url,is_locked,unlock_at').eq('story_id',story.id).eq('status','published').order('episode_number',{ascending:true});
+      const {data:episodes,error}=await db.from('shafa_episodes').select('id,title,body,episode_number,audio_url,is_locked,unlock_at').eq('story_id',story.id).eq('status','published').order('episode_number',{ascending:true});
       if(error){body.textContent='Ba a iya ɗauko labarin ba. '+error.message;return;}
       if(!episodes?.length){body.textContent='Ba a saka babi na wannan labari tukuna.';return;}
       body.textContent='';
