@@ -60,10 +60,26 @@
         await renderEpisodeBody(ep,button.parentElement);
       }catch(err){status.textContent='Ba a iya buɗe babin ba: '+err.message;button.disabled=false;button.textContent='Na dawo daga talla — buɗe babi';}
     }
+    let activeUtterance=null;
+    function speakHausa(text,statusEl,button){
+      if(!('speechSynthesis' in window)){if(statusEl)statusEl.textContent='Wannan browser ba ya goyon bayan karanta rubutu da murya.';return}
+      if(window.speechSynthesis.speaking){window.speechSynthesis.cancel();activeUtterance=null;if(button)button.textContent='🔊 Karanta da murya';if(statusEl)statusEl.textContent='An dakatar da karatu.';return}
+      const utterance=new SpeechSynthesisUtterance(text);
+      const voices=window.speechSynthesis.getVoices();
+      const voice=voices.find(v=>/^ha(-|_)/i.test(v.lang))||voices.find(v=>/^en-NG/i.test(v.lang))||voices.find(v=>/^en-GB/i.test(v.lang));
+      if(voice){utterance.voice=voice;utterance.lang=voice.lang}else utterance.lang='ha-NG';
+      utterance.rate=0.88;utterance.pitch=1;activeUtterance=utterance;
+      utterance.onend=()=>{activeUtterance=null;if(button)button.textContent='🔊 Sake karantawa';if(statusEl)statusEl.textContent=voice?'An gama karantawa da '+voice.name+'.':'An gama karantawa. Muryar ta dogara da abin da wayarka ta tanada.'};
+      utterance.onerror=()=>{activeUtterance=null;if(statusEl)statusEl.textContent='Muryar ba ta samu ba a wannan browser.';if(button)button.textContent='🔊 Sake gwadawa'};
+      if(button)button.textContent='⏹️ Dakatar';
+      if(statusEl)statusEl.textContent=voice?'Ana karantawa da '+voice.name+'...':'Ana amfani da muryar da wayarka ta tanada...';
+      window.speechSynthesis.speak(utterance);
+    }
     async function renderEpisodeBody(ep,container){
       const {data:content,error}=await db.from('shafa_episodes').select('body').eq('id',ep.id).maybeSingle();
       if(error||!content){const p=document.createElement('p');p.className='meta';p.textContent='Ba a samu rubutun babin ba. A sake gwadawa.';container.append(p);return;}
       const p=document.createElement('p');p.className='storytext';p.textContent=content.body||'';container.append(p);
+      const voiceRow=document.createElement('div');voiceRow.className='reader-actions';const voiceBtn=document.createElement('button');voiceBtn.className='btn secondary';voiceBtn.textContent='🔊 Karanta da murya';const voiceStatus=document.createElement('span');voiceStatus.className='meta';voiceBtn.addEventListener('click',()=>speakHausa(content.body||'',voiceStatus,voiceBtn));voiceRow.append(voiceBtn,voiceStatus);container.append(voiceRow);
       if(ep.audio_url){const audio=document.createElement('audio');audio.controls=true;audio.preload='none';audio.src=ep.audio_url;audio.style='display:block;width:100%;margin-top:12px';container.append(audio);}
     }
     async function openStory(story){
