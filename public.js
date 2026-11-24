@@ -10,7 +10,19 @@
   const grid=document.getElementById('storyGrid'),reader=document.getElementById('reader');
   const title=document.getElementById('readerTitle'),body=document.getElementById('storyText');
   if(!grid||!reader||!title||!body)return;
-  const AD_URL='https://uplcm.com/4/11653656';
+  const searchInput=document.getElementById('search');
+  const emptyNotice=document.getElementById('empty');
+  function filterCards(){
+    const q=(searchInput?.value||'').trim().toLocaleLowerCase('ha');
+    let shown=0;
+    grid.querySelectorAll('.card').forEach(card=>{
+      const match=(card.dataset.title||'').toLocaleLowerCase('ha').includes(q);
+      card.style.display=match?'':'none'; if(match)shown++;
+    });
+    if(emptyNotice)emptyNotice.style.display=shown?'none':'block';
+  }
+  searchInput?.addEventListener('input',filterCards);
+    const AD_URL='https://uplcm.com/4/11653656';
   try{
     await loadSdk();
     const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
@@ -29,6 +41,7 @@
       const button=document.createElement('button');button.className='read';button.textContent='Karanta labari ←';
       button.addEventListener('click',()=>openStory(story));
       section.append(tag,h,p,button);card.append(cover,section);grid.append(card);
+      filterCards();
     }
     async function ensureReaderSession(){
       let {data:{session}}=await db.auth.getSession();
