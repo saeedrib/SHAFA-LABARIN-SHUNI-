@@ -22,24 +22,22 @@ main{padding:38px 0 60px}.section-head{display:flex;justify-content:space-betwee
 <header><div class="wrap top"><a class="brand" href="#">SHAFA <span>LABARIN SHUNI</span></a><nav class="nav"><a href="#labarai">Labarai</a><a href="#game-da-mu">Game da mu</a></nav></div></header>
 <section class="hero"><div class="wrap hero-grid"><div><div class="eyebrow">Duniyar labaran Hausa</div><h1>Labarai masu jan hankali,<br>da harshenmu.</h1><p>Karanta labarai da littattafan Hausa a wuri guda. Zaɓi labari, ka nutsu cikin karatu.</p><form class="searchrow" id="searchForm"><input id="search" type="search" placeholder="Nemo labari..." aria-label="Nemo labari"><button class="btn">Nema</button></form></div><div class="hero-art" aria-hidden="true">📚</div></div></section>
 <main class="wrap" id="labarai"><div class="section-head"><div><h2>Sabbin labarai</h2><p>Zaɓi labari ka fara karantawa.</p></div></div>
-<div class="grid" id="storyGrid">
-<article class="card" data-title="Ranar Kasuwa"><div class="cover">🛍️</div><div class="card-body"><span class="tag">Rayuwar yau da kullum</span><h3>Ranar Kasuwa</h3><p>Mustapha da Aisha sun nufi kasuwa da safe, amma akwai abin da zai sauya shirin ranar.</p><button class="read" data-story="market">Karanta labari →</button></div></article>
-<article class="card" data-title="Sirrin Zuciya"><div class="cover">🌿</div><div class="card-body"><span class="tag">Soyayya</span><h3>Sirrin Zuciya</h3><p>Wani sirri da aka ɓoye na tsawon lokaci ya fara bayyana.</p><button class="read" data-story="secret">Karanta labari →</button></div></article>
-<article class="card" data-title="Hanyar Nasara"><div class="cover">✨</div><div class="card-body"><span class="tag">Ƙarfafa gwiwa</span><h3>Hanyar Nasara</h3><p>Labari game da jajircewa, haƙuri, da neman ilimi.</p><button class="read" data-story="success">Karanta labari →</button></div></article>
-</div><p class="empty" id="empty">Ba a sami labari mai wannan suna ba.</p>
-<section class="reader" id="reader" aria-live="polite"><h2 id="readerTitle"></h2><div class="meta">Shafa Labarin Shuni · Labari na gwaji</div><div class="reader-actions"><button class="btn secondary" id="closeReader">Rufe labari</button></div><div class="storytext" id="storyText"></div></section>
+<div class="grid" id="storyGrid" aria-live="polite"><p class="empty" style="display:block">Ana ɗauko labarai…</p></div><p class="empty" id="empty">Ba a sami labari mai wannan suna ba.</p><section class="reader" id="reader" aria-live="polite"><h2 id="readerTitle"></h2><div class="meta">Shafa Labarin Shuni · Labari na gwaji</div><div class="reader-actions"><button class="btn secondary" id="closeReader">Rufe labari</button></div><div class="storytext" id="storyText"></div></section>
 </main>
 <footer id="game-da-mu"><div class="wrap"><span>© <span id="year"></span> Shafa Labarin Shuni</span><span>Karatu cikin harshen Hausa.</span></div></footer>
 <script>
-const stories={
-market:{title:"Ranar Kasuwa",text:"Mustapha: Aisha, kin shirya? Rana ta yi sosai, idan muka makara kasuwa za ta watse.\n\nAisha: Na shirya, Mustapha. Amma ka jira ni kadan, na manta jakata a daki. Me za mu saya da farko?\n\nMustapha: Mu saya kayan miya da farko, sannan mu wuce wajen mai shayi mu sha shayi. Na ji yunwa sosai.\n\nAisha: To, mu je. Amma ka rike min wannan ledar, tana da nauyi. Kai namiji ne, ya kamata ka taimaka min.\n\nMustapha (yana dariya): To shikenan, ba ni. Amma idan muka dawo, ke za ki girka mana tuwon da miyar kuka, na dade ban ci ba.\n\nAisha: Zan girka maka, amma da sharadi daya. Ka yi min alkawarin ba za ka sake makara zuwa makaranta ba gobe.\n\nMustapha: Na yi alkawari, Aisha. Gobe da wuri zan tashi. Mu tafi yanzu kafin rana ta kara zafi."},
-secret:{title:"Sirrin Zuciya",text:"Wannan labari samfurin gwaji ne. Za a saka cikakken labari daga dashboard lokacin da aka haɗa tsarin gudanarwa."},
-success:{title:"Hanyar Nasara",text:"Wannan labari samfurin gwaji ne. Za a saka cikakken labari daga dashboard lokacin da aka haɗa tsarin gudanarwa."}
-};
 document.getElementById('year').textContent=new Date().getFullYear();
-document.querySelectorAll('[data-story]').forEach(btn=>btn.addEventListener('click',()=>{const s=stories[btn.dataset.story];document.getElementById('readerTitle').textContent=s.title;document.getElementById('storyText').textContent=s.text;document.getElementById('reader').classList.add('open');document.getElementById('reader').scrollIntoView({behavior:'smooth',block:'start'});}));
 document.getElementById('closeReader').addEventListener('click',()=>document.getElementById('reader').classList.remove('open'));
-document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();const q=document.getElementById('search').value.trim().toLocaleLowerCase('ha');let shown=0;document.querySelectorAll('.card').forEach(card=>{const ok=card.dataset.title.toLocaleLowerCase('ha').includes(q);card.style.display=ok?'':'none';if(ok)shown++;});document.getElementById('empty').style.display=shown?'none':'block';});
+document.getElementById('searchForm').addEventListener('submit',e=>{
+ e.preventDefault();
+ const q=document.getElementById('search').value.trim().toLocaleLowerCase('ha');
+ let shown=0;
+ document.querySelectorAll('#storyGrid .card').forEach(card=>{
+  const ok=(card.dataset.title||'').toLocaleLowerCase('ha').includes(q);
+  card.style.display=ok?'':'none'; if(ok)shown++;
+ });
+ document.getElementById('empty').style.display=shown?'none':'block';
+});
 </script>
 <script src="config.js"></script><script src="public.js"></script>
 </body>
