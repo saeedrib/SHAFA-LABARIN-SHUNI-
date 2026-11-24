@@ -24,12 +24,14 @@ The repository root contains `index.html`; import this repository into Vercel as
 - Story reader: loads published episodes.
 - Admin story management: create, edit, publish/draft, delete.
 - Admin episode management: create, edit, publish/draft, delete, audio URL, lock flag and scheduled unlock time.
-- Locked episode content is filtered by database RLS unless the episode is unlocked by its scheduled time, an unlock record exists for the signed-in user, or the user is an admin.
+- An kulle rubutun babi ta RLS. Babi kyauta da wanda lokacin buɗewarsa ya yi suna buɗewa kai tsaye; sauran babuka suna buƙatar rajistar buɗewa ga mai karatu ko mai gudanarwa.
+- An haɗa hanyar talla ta UPLCM: mai karatu ya buɗe tallar, ya dawo shafin, sannan ya tabbatar domin a rubuta buɗewar babin. Ba a karɓar kuɗi daga mai karatu.
+- Dole ne a kunna Anonymous Sign-Ins a Supabase Auth domin baƙi su samu zaman karatu ba tare da rajista da imel ba.
 - Direct cover image upload to the public `shafa-covers` Storage bucket (JPG/PNG/WebP, max 5MB).
 - Direct audio upload to the public `shafa-audio` Storage bucket (MP3/MP4/OGG/WAV/WebM, max 25MB); external audio URLs are also supported.
 - A published sample story, “Ranar Kasuwa”, with its first free episode is seeded in the database.
 - Locked episode titles and scheduled unlock notices are shown through a metadata-only RPC; protected episode text remains behind table RLS.
-- Rewarded-ad verification, payment processing, AI story assistant, and generated Mustapha/female narration are not yet implemented.
+- Tabbatar da kallon talla ta UPLCM daga uwar garken (provider postback), biyan kuɗi, mataimakin AI, da samar da muryoyin Mustapha/mace ba su kammala ba. Maɓallin dawowa na yanzu yana dogara da tabbatarwar mai karatu; ba hujjar fasaha ba ce cewa an kammala kallon talla.
 - Deployment and real-device end-to-end testing must be confirmed in Vercel/browser before describing the site as fully live.
 
 ## Important security note
