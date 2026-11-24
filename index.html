@@ -41,5 +41,6 @@ document.querySelectorAll('[data-story]').forEach(btn=>btn.addEventListener('cli
 document.getElementById('closeReader').addEventListener('click',()=>document.getElementById('reader').classList.remove('open'));
 document.getElementById('searchForm').addEventListener('submit',e=>{e.preventDefault();const q=document.getElementById('search').value.trim().toLocaleLowerCase('ha');let shown=0;document.querySelectorAll('.card').forEach(card=>{const ok=card.dataset.title.toLocaleLowerCase('ha').includes(q);card.style.display=ok?'':'none';if(ok)shown++;});document.getElementById('empty').style.display=shown?'none':'block';});
 </script>
+<script src="config.js"></script><script src="public.js"></script>
 </body>
 </html>
