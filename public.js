@@ -1,108 +1,23 @@
-/* Shafa Labarin Shuni: kundin jama'a da buɗe babi ta hanyar ziyartar talla. */
+/* Shafa Labarin Shuni: scheduled audio playback. */
 (async function(){
-  const cfg=window.SHAFA_CONFIG;
-  if(!cfg?.supabaseUrl||!cfg?.supabaseAnonKey||cfg.supabaseUrl.includes('YOUR-PROJECT')) return;
-  const loadSdk=()=>new Promise((resolve,reject)=>{
-    if(window.supabase?.createClient)return resolve();
-    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
-    s.onload=resolve;s.onerror=()=>reject(new Error('Ba a iya haɗa tsarin bayanai ba.'));document.head.appendChild(s);
-  });
-  const grid=document.getElementById('storyGrid'),reader=document.getElementById('reader');
-  const title=document.getElementById('readerTitle'),body=document.getElementById('storyText');
-  if(!grid||!reader||!title||!body)return;
-  const searchInput=document.getElementById('search');
-  const emptyNotice=document.getElementById('empty');
-  function filterCards(){
-    const q=(searchInput?.value||'').trim().toLocaleLowerCase('ha');
-    let shown=0;
-    grid.querySelectorAll('.card').forEach(card=>{
-      const match=(card.dataset.title||'').toLocaleLowerCase('ha').includes(q);
-      card.style.display=match?'':'none'; if(match)shown++;
-    });
-    if(emptyNotice)emptyNotice.style.display=shown?'none':'block';
-  }
-  searchInput?.addEventListener('input',filterCards);
-    const AD_URL='https://uplcm.com/4/11653656';
-  try{
-    await loadSdk();
-    const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);
-    const {data:stories,error}=await db.from('shafa_stories').select('id,title,slug,summary,category,cover_url').eq('status','published').order('created_at',{ascending:false});
-    if(error)throw error;
-    if(!stories?.length){grid.innerHTML='<p class="empty" style="display:block">Ba a wallafa wani labari tukuna.</p>';return;}
-    grid.innerHTML='';
-    for(const story of stories){
-      const card=document.createElement('article');card.className='card';card.dataset.title=story.title;
-      const cover=document.createElement('div');cover.className='cover';
-      if(story.cover_url){const img=document.createElement('img');img.src=story.cover_url;img.alt='Murfin '+story.title;img.loading='lazy';img.style='width:100%;height:100%;object-fit:cover';cover.append(img);}else cover.textContent='📖';
-      const section=document.createElement('div');section.className='card-body';
-      const tag=document.createElement('span');tag.className='tag';tag.textContent=story.category||'Labarai';
-      const h=document.createElement('h3');h.textContent=story.title;
-      const p=document.createElement('p');p.textContent=story.summary||'Buɗe wannan labari domin karantawa.';
-      const button=document.createElement('button');button.className='read';button.textContent='Karanta labari ←';
-      button.addEventListener('click',()=>openStory(story));
-      section.append(tag,h,p,button);card.append(cover,section);grid.append(card);
-      filterCards();
-    }
-    async function ensureReaderSession(){
-      let {data:{session}}=await db.auth.getSession();
-      if(!session){const {data,error}=await db.auth.signInAnonymously();if(error)throw new Error('Ba a kunna damar karatu ta baƙo ba tukuna. A sanar da mai kula da shafin.');session=data.session;}
-      return session;
-    }
-    async function unlockEpisode(ep,button,status){
-      button.disabled=true;button.textContent='Ana buɗewa…';
-      try{
-        const session=await ensureReaderSession();
-        const {error}=await db.from('shafa_episode_unlocks').upsert({
-          user_id:session.user.id,episode_id:ep.id,unlock_method:'rewarded_ad'
-        },{onConflict:'user_id,episode_id'});
-        if(error)throw error;
-        status.textContent='An karɓi tabbacin ziyartar talla. Ana buɗe babin…';
-        await renderEpisodeBody(ep,button.parentElement);
-      }catch(err){status.textContent='Ba a iya buɗe babin ba: '+err.message;button.disabled=false;button.textContent='Na dawo daga talla — buɗe babi';}
-    }
-    let activeUtterance=null;
-    function speakHausa(text,statusEl,button){
-      if(!('speechSynthesis' in window)){if(statusEl)statusEl.textContent='Wannan browser ba ya goyon bayan karanta rubutu da murya.';return}
-      if(window.speechSynthesis.speaking){window.speechSynthesis.cancel();activeUtterance=null;if(button)button.textContent='🔊 Karanta da murya';if(statusEl)statusEl.textContent='An dakatar da karatu.';return}
-      const utterance=new SpeechSynthesisUtterance(text);
-      const voices=window.speechSynthesis.getVoices();
-      const voice=voices.find(v=>/^ha(-|_)/i.test(v.lang))||voices.find(v=>/^en-NG/i.test(v.lang))||voices.find(v=>/^en-GB/i.test(v.lang));
-      if(voice){utterance.voice=voice;utterance.lang=voice.lang}else utterance.lang='ha-NG';
-      utterance.rate=0.88;utterance.pitch=1;activeUtterance=utterance;
-      utterance.onend=()=>{activeUtterance=null;if(button)button.textContent='🔊 Sake karantawa';if(statusEl)statusEl.textContent=voice?'An gama karantawa da '+voice.name+'.':'An gama karantawa. Muryar ta dogara da abin da wayarka ta tanada.'};
-      utterance.onerror=()=>{activeUtterance=null;if(statusEl)statusEl.textContent='Muryar ba ta samu ba a wannan browser.';if(button)button.textContent='🔊 Sake gwadawa'};
-      if(button)button.textContent='⏹️ Dakatar';
-      if(statusEl)statusEl.textContent=voice?'Ana karantawa da '+voice.name+'...':'Ana amfani da muryar da wayarka ta tanada...';
-      window.speechSynthesis.speak(utterance);
-    }
-    async function renderEpisodeBody(ep,container){
-      const {data:content,error}=await db.from('shafa_episodes').select('body').eq('id',ep.id).maybeSingle();
-      if(error||!content){const p=document.createElement('p');p.className='meta';p.textContent='Ba a samu rubutun babin ba. A sake gwadawa.';container.append(p);return;}
-      const p=document.createElement('p');p.className='storytext';p.textContent=content.body||'';container.append(p);
-      const voiceRow=document.createElement('div');voiceRow.className='reader-actions';const voiceBtn=document.createElement('button');voiceBtn.className='btn secondary';voiceBtn.textContent='🔊 Karanta da murya';const voiceStatus=document.createElement('span');voiceStatus.className='meta';voiceBtn.addEventListener('click',()=>speakHausa(content.body||'',voiceStatus,voiceBtn));voiceRow.append(voiceBtn,voiceStatus);container.append(voiceRow);
-      if(ep.audio_url){const audio=document.createElement('audio');audio.controls=true;audio.preload='none';audio.src=ep.audio_url;audio.style='display:block;width:100%;margin-top:12px';container.append(audio);}
-    }
-    async function openStory(story){
-      title.textContent=story.title;body.textContent='Ana ɗauko babi…';reader.classList.add('open');reader.scrollIntoView({behavior:'smooth',block:'start'});
-      const {data:episodes,error}=await db.rpc('get_shafa_episode_catalog',{p_story_id:story.id});
-      if(error){body.textContent='Ba a iya ɗauko babi ba. A sake gwadawa.';return;}
-      if(!episodes?.length){body.textContent='Ba a saka babi na wannan labari tukuna.';return;}
-      body.textContent='';
-      for(const ep of episodes){
-        const part=document.createElement('section');part.style='padding:14px 0;border-bottom:1px solid #e9eee9';
-        const h=document.createElement('h3');h.textContent='Babi na '+(ep.episode_number||'')+': '+(ep.title||'');part.append(h);
-        const scheduledOpen=ep.unlock_at&&new Date(ep.unlock_at).getTime()<=Date.now();
-        if(ep.is_locked&&!scheduledOpen){
-          const info=document.createElement('p');info.className='meta';info.textContent='An kulle wannan babi. Ba sai ka biya kuɗi ba: buɗe tallar domin ci gaba.';part.append(info);
-          const ad=document.createElement('a');ad.href=AD_URL;ad.target='_blank';ad.rel='noopener noreferrer';ad.className='btn';ad.textContent='Buɗe Talla';ad.style='display:inline-block;margin:4px 8px 8px 0';part.append(ad);
-          const confirm=document.createElement('button');confirm.className='btn secondary';confirm.textContent='Na dawo daga talla — buɗe babi';
-          const status=document.createElement('p');status.className='meta';status.textContent='Bayan ka buɗe tallar, ka dawo nan ka danna maɓallin nan.';
-          confirm.addEventListener('click',()=>unlockEpisode(ep,confirm,status));part.append(confirm,status);
-        }else{
-          await renderEpisodeBody(ep,part);
-        }
-        body.append(part);
-      }
-    }
-  }catch(err){console.error('Shafa:',err);const msg=document.createElement('p');msg.className='empty';msg.style.display='block';msg.textContent='An samu matsala wajen ɗauko labarai. A sake buɗe shafin.';grid.replaceChildren(msg);}
+ const cfg=window.SHAFA_CONFIG;if(!cfg?.supabaseUrl||!cfg?.supabaseAnonKey||cfg.supabaseUrl.includes('YOUR-PROJECT'))return;
+ const loadSdk=()=>new Promise((resolve,reject)=>{if(window.supabase?.createClient)return resolve();const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';s.onload=resolve;s.onerror=()=>reject(new Error('Ba a iya haɗa tsarin bayanai ba.'));document.head.appendChild(s)});
+ const grid=document.getElementById('storyGrid'),reader=document.getElementById('reader'),title=document.getElementById('readerTitle'),body=document.getElementById('storyText');if(!grid||!reader||!title||!body)return;
+ const searchInput=document.getElementById('search'),emptyNotice=document.getElementById('empty');
+ function filterCards(){const q=(searchInput?.value||'').trim().toLocaleLowerCase('ha');let shown=0;grid.querySelectorAll('.card').forEach(card=>{const ok=(card.dataset.title||'').toLocaleLowerCase('ha').includes(q);card.style.display=ok?'':'none';if(ok)shown++});if(emptyNotice)emptyNotice.style.display=shown?'none':'block'}searchInput?.addEventListener('input',filterCards);
+ try{await loadSdk();const db=window.supabase.createClient(cfg.supabaseUrl,cfg.supabaseAnonKey);const {data:stories,error}=await db.from('shafa_stories').select('id,title,slug,summary,category,cover_url').eq('status','published').order('created_at',{ascending:false});if(error)throw error;if(!stories?.length){grid.innerHTML='<p class="empty" style="display:block">Ba a wallafa wani labari tukuna.</p>';return}grid.innerHTML='';
+ for(const story of stories){const card=document.createElement('article');card.className='card';card.dataset.title=story.title;const cover=document.createElement('div');cover.className='cover';if(story.cover_url){const img=document.createElement('img');img.src=story.cover_url;img.alt='Murfin '+story.title;img.loading='lazy';img.style='width:100%;height:100%;object-fit:cover';cover.append(img)}else cover.textContent='📖';const section=document.createElement('div');section.className='card-body';const tag=document.createElement('span');tag.className='tag';tag.textContent=story.category||'Labarai';const h=document.createElement('h3');h.textContent=story.title;const desc=document.createElement('p');desc.textContent=story.summary||'Buɗe wannan labari domin sauraro ko karatu.';const button=document.createElement('button');button.className='read';button.textContent='Buɗe shiri ←';button.addEventListener('click',()=>openStory(story));section.append(tag,h,desc,button);card.append(cover,section);grid.append(card);filterCards()}
+ function startFor(s,now){if(!s.repeat_daily)return new Date(s.starts_at).getTime();const [hh,mm]=(s.local_time||'00:00').split(':').map(Number);const lagos=new Date(now.toLocaleString('en-US',{timeZone:'Africa/Lagos'}));const d=new Date(lagos);d.setHours(hh,mm,0,0);if(d>lagos)d.setDate(d.getDate()-1);return now.getTime()-(lagos.getTime()-d.getTime())}
+ function activeFor(ep){const now=new Date();const xs=(ep.schedules||[]).map(s=>({s,start:startFor(s,now)})).filter(x=>x.start<=now.getTime()).sort((a,b)=>b.start-a.start);if(!xs.length)return null;return now.getTime()-xs[0].start<86400000?xs[0]:null}
+ function nextFor(ep){const now=Date.now();const out=[];(ep.schedules||[]).forEach(s=>{if(s.repeat_daily){const [h,m]=s.local_time.split(':').map(Number);const lagos=new Date(new Date(now).toLocaleString('en-US',{timeZone:'Africa/Lagos'}));lagos.setHours(h,m,0,0);if(lagos.getTime()<=new Date(new Date(now).toLocaleString('en-US',{timeZone:'Africa/Lagos'})).getTime())lagos.setDate(lagos.getDate()+1);out.push(now+(lagos.getTime()-new Date(new Date(now).toLocaleString('en-US',{timeZone:'Africa/Lagos'})).getTime()))}else{const t=new Date(s.starts_at).getTime();if(t>now)out.push(t)}});return out.length?Math.min(...out):null}
+ function label(t){return new Intl.DateTimeFormat('ha-NG',{dateStyle:'medium',timeStyle:'short'}).format(new Date(t))}
+ async function renderEpisode(ep,part){const active=activeFor(ep),legacy=ep.unlock_at&&new Date(ep.unlock_at).getTime()<=Date.now(),open=!ep.is_locked||legacy||active;if(!open){const info=document.createElement('p');info.className='meta';const next=nextFor(ep);info.textContent=next?'An tanadi wannan shiri. Zai fara '+label(next)+'.':'Ba a saka lokacin fara wannan shiri ba tukuna.';part.append(info);return}
+ const {data:content,error}=await db.from('shafa_episodes').select('body').eq('id',ep.id).maybeSingle();if(error||!content){const info=document.createElement('p');info.className='meta';info.textContent='Shirin bai buɗe a database ba tukuna. A sabunta shafin idan lokacin ya yi.';part.append(info);return}
+ if(content.body){const para=document.createElement('p');para.className='storytext';para.textContent=content.body;part.append(para)}
+ if(!ep.audio_url){const info=document.createElement('p');info.className='meta';info.textContent='Ba a ɗora sautin wannan babi ba tukuna.';part.append(info);return}
+ const audio=document.createElement('audio');audio.preload='auto';audio.src=ep.audio_url;audio.controls=false;audio.setAttribute('controlslist','nodownload noplaybackrate noremoteplayback');audio.disableRemotePlayback=true;audio.style='display:none';const row=document.createElement('div');row.className='reader-actions';const play=document.createElement('button');play.className='btn';play.textContent='▶ Saurara';const status=document.createElement('span');status.className='meta';row.append(play,status);part.append(row,audio);
+ if(active){const elapsed=Math.max(0,(Date.now()-active.start)/1000);audio.addEventListener('loadedmetadata',()=>{if(elapsed>=audio.duration){status.textContent='Wannan zagayen shirin ya ƙare. Jira maimaitawa ta gaba.';play.disabled=true;play.textContent='Shiri ya ƙare';return}audio.currentTime=elapsed;status.textContent='An daidaita sauraro da inda shirin yake yanzu.';audio.play().then(()=>play.textContent='⏸ Dakata').catch(()=>status.textContent='Danna Saurara domin shiga shirin daga inda yake yanzu.')},{once:true})}else status.textContent='An buɗe shirin. Danna Saurara domin farawa.';
+ play.addEventListener('click',async()=>{try{if(audio.paused){if(active&&audio.currentTime===0){const elapsed=Math.max(0,(Date.now()-active.start)/1000);if(Number.isFinite(audio.duration)&&elapsed<audio.duration)audio.currentTime=elapsed}await audio.play();play.textContent='⏸ Dakata'}else{audio.pause();play.textContent='▶ Ci gaba'}}catch(e){status.textContent='An kasa kunna sautin. Sake danna Saurara.'}});audio.addEventListener('ended',()=>{play.disabled=true;play.textContent='Shiri ya ƙare';status.textContent='An kammala wannan shiri. Jira maimaitawa ta gaba.'})}
+ async function openStory(story){title.textContent=story.title;body.textContent='Ana ɗauko shirye-shirye…';reader.classList.add('open');reader.scrollIntoView({behavior:'smooth',block:'start'});const {data:eps,error}=await db.rpc('get_shafa_episode_catalog',{p_story_id:story.id});if(error){body.textContent='Ba a iya ɗauko shirye-shirye ba. A sake gwadawa.';return}if(!eps?.length){body.textContent='Ba a saka shiri na wannan labari tukuna.';return}body.textContent='';for(const ep of eps){const part=document.createElement('section');part.style='padding:14px 0;border-bottom:1px solid #e9eee9';const h=document.createElement('h3');h.textContent='Babi na '+(ep.episode_number||'')+': '+(ep.title||'');part.append(h);await renderEpisode(ep,part);body.append(part)}}
+ }catch(err){console.error('Shafa:',err);const msg=document.createElement('p');msg.className='empty';msg.style.display='block';msg.textContent='An samu matsala wajen ɗauko labarai. A sake buɗe shafin.';grid.replaceChildren(msg)}
 })();
