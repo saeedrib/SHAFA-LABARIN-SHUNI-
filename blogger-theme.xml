@@ -29,7 +29,7 @@ footer{background:#102f28;color:#dbe7df;padding:24px 0;font-size:.9rem}
 <body>
 <header><div class='wrap head'><a class='brand' href='/' >SHAFA <span>LABARIN SHUNI</span></a><a class='admin' href='https://shafa-blond.vercel.app/admin.html'>Admin ↗</a></div></header>
 <div class='hero'><div class='wrap'><div class='eyebrow'>Gidan rediyon labaran Hausa</div><h1>Shafa Labarin Shuni</h1><p>Labaran Hausa, shirye-shiryen rediyo da labarai masu jan hankali — a saurare ka ko ina.</p></div></div>
-<b:section class='ads-area' id='ads-top' maxwidgets='2' showaddelement='yes'/>
+<b:section class='ads-area' id='adsTop' maxwidgets='2' showaddelement='yes'/>
 <div class='gender' id='genderGate'><div class='gender-box'><div class='eyebrow'>Barka da zuwa</div><h2>Zaɓi Jinsinka</h2><p class='muted'>Zaɓi domin ci gaba zuwa shafin sauraro.</p><div class='gender-actions'><button class='btn green' id='maleBtn'>Namiji</button><button class='btn' id='femaleBtn'>Mace</button></div></div></div>
 <main class='wrap'>
 <section class='panel'><h2 class='section-title'>Cigaban Shirin</h2><p class='muted' id='programName'>Ana ɗauko shirye-shirye...</p><div class='schedule-grid'><div class='schedule-box'><span class='muted'>Shiri na gaba</span><strong id='nextTime'>Ana dubawa...</strong><div class='countdown' id='countdown'>--:--:--</div></div><div class='schedule-box'><span class='muted'>Lokacin maimaitawa</span><strong id='repeatTime'>Ba a saita ba</strong><span class='muted' id='programStatus'>Jadawalin yau</span></div></div></section>
@@ -37,9 +37,9 @@ footer{background:#102f28;color:#dbe7df;padding:24px 0;font-size:.9rem}
 <section class='panel'><h2 class='section-title'>Shirye-shiryen da suka gabata</h2><p class='muted'>Saurari shirye-shiryen da aka kammala.</p><div id='history'><p class='muted'>Ana ɗauko jerin shirye-shirye...</p></div></section>
 <section><h2 class='section-title'>Labarai da shirye-shirye</h2><p class='muted'>Zaɓi labari domin ganin shirye-shiryensa.</p><div class='story-grid' id='stories'><p class='muted'>Ana ɗauko labarai...</p></div></section>
 </main>
-<b:section class='ads-area' id='ads-bottom' maxwidgets='2' showaddelement='yes'/>
+<b:section class='ads-area' id='adsBottom' maxwidgets='2' showaddelement='yes'/>
 <footer><div class='wrap'>© <span id='year'></span> Shafa Labarin Shuni · Labaran Hausa</div></footer>
-<b:section class='blog-widgets' id='blog-widgets' maxwidgets='1' showaddelement='no'/>
+<b:section class='blog-widgets' id='blogWidgets' maxwidgets='1' showaddelement='no'/>
 <script type='text/javascript'>
 //<![CDATA[
 (function(){
