@@ -39,7 +39,9 @@ footer{background:#102f28;color:#dbe7df;padding:24px 0;font-size:.9rem}
 </main>
 <b:section class='ads-area' id='adsBottom' maxwidgets='2' showaddelement='yes'/>
 <footer><div class='wrap'>© <span id='year'></span> Shafa Labarin Shuni · Labaran Hausa</div></footer>
-<b:section class='blog-widgets' id='blogWidgets' maxwidgets='1' showaddelement='no'/>
+<b:section class='blog-widgets' id='blogWidgets' maxwidgets='1' showaddelement='no'>
+  <b:widget id='Blog1' type='Blog' version='2' locked='yes'/>
+</b:section>
 <script type='text/javascript'>
 //<![CDATA[
 (function(){
