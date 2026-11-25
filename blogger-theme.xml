@@ -3,6 +3,7 @@
 <html b:version='2' class='v2' expr:dir='data:blog.languageDirection' xmlns='http://www.w3.org/1999/xhtml' xmlns:b='http://www.google.com/2005/gml/b' xmlns:data='http://www.google.com/2005/gml/data' xmlns:expr='http://www.google.com/2005/gml/expr'>
 <head>
   <meta content='width=device-width,initial-scale=1' name='viewport'/>
+  <meta name='monetag' content='77f2c0eaf6318aff123918dcbba5b5ec'/>
   <meta content='#102f28' name='theme-color'/>
   <title><data:blog.pageTitle/></title>
   <b:include data='blog' name='all-head-content'/>
