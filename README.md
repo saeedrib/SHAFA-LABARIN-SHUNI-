@@ -36,3 +36,10 @@ The repository root contains `index.html`; import this repository into Vercel as
 
 ## Important security note
 Never expose a Supabase `service_role` key in `config.js`. Use only the publishable/anon key in the browser. Configure any future rewarded-ad or payment unlock through a trusted server-side verification flow; never unlock episodes merely because a user clicks an advertisement.
+
+
+## Blogger public site
+- `blogger-theme.xml` is the Blogger XML theme for the public-facing radio/story site.
+- `BLOGGER-SETUP-HA.md` explains how to install it and add Monetag through Blogger Layout.
+- Keep `admin.html`, `admin-episodes.html`, and Supabase as the management/backend system. Do not expose service-role credentials.
+- The Blogger theme requires installation in the Blogger dashboard and real-device testing; committing the XML does not publish it to a Blogger blog or change DNS automatically.
